@@ -13,9 +13,19 @@ jobs:
 
       - name: Extract project zip
         run: |
-          unzip -o Android-Mod-Menu-main.zip -d temp_folder
-          mv temp_folder/Android-Mod-Menu-main/* .
-          rm -rf temp_folder Android-Mod-Menu-main.zip
+          # فك الضغط
+          unzip -o Android-Mod-Menu-main.zip
+          # ابحث عن أي مجلد تم استخراجه (بغض النظر عن اسمه)
+          EXTRACTED_DIR=$(find . -maxdepth 1 -type d -name "Android-Mod-Menu*" | head -n 1)
+          if [ -d "$EXTRACTED_DIR" ]; then
+            echo "نقل الملفات من: $EXTRACTED_DIR"
+            mv $EXTRACTED_DIR/* . 2>/dev/null || true
+            mv $EXTRACTED_DIR/.[!.]* . 2>/dev/null || true
+            rm -rf $EXTRACTED_DIR
+          fi
+          # حذف ملف zip بعد الاستخراج
+          rm -f Android-Mod-Menu-main.zip
+          # تأكد من ظهور الملفات
           ls -la
 
       - name: Set up JDK 11
