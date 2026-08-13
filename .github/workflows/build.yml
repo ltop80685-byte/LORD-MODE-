@@ -1,0 +1,46 @@
+name: Build LORD X MODS APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract project zip
+        run: |
+          unzip -o Android-Mod-Menu-main.zip -d temp_folder
+          mv temp_folder/Android-Mod-Menu-main/* .
+          rm -rf temp_folder Android-Mod-Menu-main.zip
+          ls -la
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup NDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+          echo "y" | sdkmanager "ndk;25.2.9519653"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LORDX-MODS-APK
+          path: app/build/outputs/apk/debug/*.apk
